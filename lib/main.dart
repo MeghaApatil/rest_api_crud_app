@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_api_app/screens/home/home.dart';
-import 'package:flutter_api_app/screens/second/second.dart';
+import 'package:flutter_api_app/utils/color_pallate.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,13 +15,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.orange,
+        primarySwatch: Palette.white,
       ),
-      home: Home(),
-      routes: {
-        '/home': (context) => Home(),
-        '/second': (context) => Second(),
-      },
+      home: const Home(),
     );
   }
 }

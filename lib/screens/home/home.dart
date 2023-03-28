@@ -1,14 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_api_app/api_config/url_constants.dart';
-import 'package:flutter_api_app/models/data_item.dart';
 import 'package:flutter_api_app/models/item.dart';
-import 'package:flutter_api_app/screens/home/homeView.dart';
+import 'package:flutter_api_app/screens/home/home_view.dart';
+import 'package:flutter_api_app/screens/home/home_view_model.dart';
 import 'package:flutter_api_app/screens/second/second.dart';
 import 'package:flutter_api_app/utils/messages.dart';
-import 'package:flutter_api_app/utils/snackbarutil.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_api_app/utils/snackbar_util.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -19,6 +15,8 @@ class Home extends StatefulWidget {
 
 abstract class HomeState extends State<Home> {
   List<Item> items = [];
+  HomeViewModel homeViewModel = HomeViewModel();
+
   @override
   void initState() {
     super.initState();
@@ -26,44 +24,38 @@ abstract class HomeState extends State<Home> {
   }
 
   Future<void> fetchData() async {
-    final url = Uri.parse(Urls.getUrl);
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body) as Map;
-      DataItem dataItem = DataItem.fromJson(json);
-      setState(() {
-        items = dataItem.items;
-        print('item len::${items.length}');
-        SnackBarUtil.showSnackbar(context, Messages.success);
-      });
-    } else {
-      SnackBarUtil.showErrorSnackbar(context, Messages.error, Colors.red);
-    }
-  }
-
-  deleteDataById(String id) async {
-    final url = Uri.parse(Urls.deleteUrl + id);
-    final response = await http.delete(url);
-    if (response.statusCode == 200) {
-      final itemList = items.where((item) => item.id != id).toList();
+    homeViewModel.fetchDataApi(context, (List<Item> itemList) {
       setState(() {
         items = itemList;
-        print('${items.length}');
-        SnackBarUtil.showSnackbar(context, Messages.dataDeleted);
       });
-    } else {
-      SnackBarUtil.showErrorSnackbar(context, Messages.listEmpty, Colors.red);
-    }
+      SnackBarUtil.showSnackbar(context, Messages.success);
+    }, (error) {
+      SnackBarUtil.showErrorSnackbar(context, error, Colors.red);
+    });
   }
 
+  deleteDataById(String id) {
+    homeViewModel.deleteDataByIdApi(id, items, context, (List<Item> itemList) {
+      setState(() {
+        items = itemList;
+      });
+      SnackBarUtil.showSnackbar(context, Messages.dataDeleted);
+    }, (error) {
+      SnackBarUtil.showErrorSnackbar(context, error, Colors.red);
+    });
+  }
 
-navigateToSecond() {
+  navigateToSecond() {
     final route = MaterialPageRoute(builder: (context) => const Second());
     Navigator.of(context).push(route);
   }
 
-navigateToEdit(Item item1) {
-    final route = MaterialPageRoute(builder: (context) => Second(item: item1,));
+  navigateToEdit(Item item1) {
+    final route = MaterialPageRoute(
+      builder: (context) => Second(
+        item: item1,
+      ),
+    );
     Navigator.of(context).push(route);
   }
 }
